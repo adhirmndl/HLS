@@ -1,0 +1,128 @@
+package io.ivis.hls;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import io.humble.ferry.Buffer;
+import io.humble.video.Coder;
+import io.humble.video.Decoder;
+import io.humble.video.Demuxer;
+import io.humble.video.DemuxerStream;
+import io.humble.video.MediaPacket;
+import io.humble.video.Muxer;
+import io.humble.video.MuxerFormat;
+import io.humble.video.Rational;
+
+public class ContainerSegmenter {
+
+  private static void segmentFile(String input, String output) throws InterruptedException, IOException {
+	  int hls_start=0;
+      int hls_time=2;
+      int hls_list_size=0;
+      int hls_wrap=0;
+
+    final Demuxer demuxer = Demuxer.make();
+    
+    demuxer.open(input, null, false, true, null, null);
+    
+    final Muxer muxer = Muxer.make(output, null, "hls");
+    muxer.setProperty("start_number", hls_start);
+    muxer.setProperty("hls_time", hls_time);
+    muxer.setProperty("hls_list_size", hls_list_size);
+    muxer.setProperty("hls_wrap", hls_wrap);
+    final MuxerFormat format = MuxerFormat.guessFormat("mp4", null, null);
+
+    
+    int n = demuxer.getNumStreams();
+    final Decoder[] decoders = new Decoder[n];
+    for(int i = 0; i < n; i++) {
+      final DemuxerStream ds = demuxer.getStream(i);
+      decoders[i] = ds.getDecoder();
+      final Decoder d = decoders[i];
+      
+      if (d != null) {
+        if (!format.getSupportedCodecs().contains(d.getCodecID())) {
+          throw new RuntimeException("Input filename (" + input + ") contains at least one stream with a codec not supported in the output format: " + d.toString());
+        }
+        if (format.getFlag(MuxerFormat.Flag.GLOBAL_HEADER))
+          d.setFlag(Coder.Flag.FLAG_GLOBAL_HEADER, true);
+        d.open(null, null);
+        muxer.addNewStream(d);
+      }
+    }
+    muxer.open(null, null);
+    long pts = 0;
+    long dts = 0;
+    long duration = 48000;
+    Rational timeBase = Rational.make(1, 1200000);
+    for(int i=1; i < 2000; i++)
+    {
+    	String fileName = "E:\\Arshad\\H264_Encoded\\"+i+".bin";
+    	System.out.println(fileName);
+    	byte[] data = getData(fileName);
+    	boolean keyPacket = data.length > 10000; 
+    	if (keyPacket) 
+    		System.out.println("KeyPacket = " + i);
+    	Buffer buf = Buffer.make(null, data, 0, data.length);
+    	MediaPacket packet1 = MediaPacket.make(buf);
+    	packet1.setPts(pts);
+    	packet1.setDts(dts);
+    	packet1.setDuration(duration);
+    	packet1.setKeyPacket(keyPacket);
+    	packet1.setStreamIndex(0);
+    	packet1.setTimeBase(timeBase);
+        muxer.write(packet1, true);        
+        packet1.delete();
+        buf.delete();
+        pts += duration;
+        dts += duration;
+
+    }
+    
+
+    muxer.close();
+    demuxer.close();
+
+  }
+
+
+  /**
+   */
+  @SuppressWarnings("static-access")
+  public static void main(String[] args) throws InterruptedException, IOException {
+        String input = "E:\\MAC0\\1.mp4";
+        String output="E:\\Arshad\\out\\test.m3u8";
+        segmentFile(input, output);
+      }
+  
+/*  private static void dumpData(String fileName, byte[] data)
+  {
+	  try {	  
+		  FileOutputStream out = new FileOutputStream(fileName);
+		  out.write(data);
+		  out.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+  }*/
+  
+  private static byte[] getData(String fileName)
+  {
+	  File file = new File(fileName);
+	  long len = file.length();
+	  
+	  byte[] data = new byte[(int)len +1];
+	  FileInputStream input;
+	try {
+		input = new FileInputStream(file);
+		input.read(data, 1, (int)len);
+		input.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	return data;
+  }
+  
+}

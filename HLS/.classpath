@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/humble-video-noarch-0.2.1.jar" sourcepath="E:/Arshad/jar/lib/humble-video-noarch-0.2.1-sources.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/humble-video-all-0.1.1.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/humble-video-arch-x86_64-w64-mingw32-0.2.1.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/logback-classic-1.2.3.jar"/>
+	<classpathentry kind="lib" path="E:/Arshad/jar/logback-core-1.2.3.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
